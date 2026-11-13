@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gemelo Digital Biblioteca Simón Bolívar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: banda de zonas (Edificio / Gemelo digital), cinco capas en fila, circuito de personal debajo, panel de detalle al final */
+:root {
+  --bg: #F6F8FB;
+  --surface: #FFFFFF;
+  --ink: #17283D;
+  --muted: #55657A;
+  --navy: #1F3A5F;
+  --navy-ink: #FFFFFF;
+  --tint: #DDE7F3;
+  --tint-ink: #1B2C42;
+  --copper: #A85A14;
+  --copper-soft: #F6E7D6;
+  --line: #C9D4E2;
+  --ok: #2E7D5B;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1621; --surface: #152233; --ink: #E6EDF6; --muted: #98A8BC;
+    --navy: #2C5286; --navy-ink: #FFFFFF; --tint: #1B2B40; --tint-ink: #DCE6F2;
+    --copper: #E39B58; --copper-soft: #3A2A1A; --line: #2B3C52; --ok: #5CC49A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1621; --surface: #152233; --ink: #E6EDF6; --muted: #98A8BC;
+  --navy: #2C5286; --navy-ink: #FFFFFF; --tint: #1B2B40; --tint-ink: #DCE6F2;
+  --copper: #E39B58; --copper-soft: #3A2A1A; --line: #2B3C52; --ok: #5CC49A;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body);
+  font-size: 15px; line-height: 1.5;
+  padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--copper); margin: 0 0 4px; }
+h1 { font-size: clamp(22px, 3.2vw, 30px); line-height: 1.15; margin: 0; font-weight: 700; text-wrap: balance; }
+.sub { margin: 6px 0 0; color: var(--muted); max-width: 62ch; }
+.play {
+  font: inherit; font-weight: 600; cursor: pointer; color: var(--navy-ink); background: var(--navy);
+  border: 0; border-radius: 6px; padding: 10px 16px; display: inline-flex; gap: 8px; align-items: center;
+}
+.play:hover { filter: brightness(1.12); }
+.play:focus-visible, .step:focus-visible, .staff:focus-visible, .chip:focus-visible { outline: 3px solid var(--copper); outline-offset: 3px; }
+
+/* bandas de zona */
+.zones { display: grid; grid-template-columns: repeat(5, 1fr); column-gap: 28px; }
+.zone { font-weight: 700; letter-spacing: .04em; color: var(--copper); font-size: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--copper); text-transform: uppercase; }
+.zone.z1 { grid-column: 1; text-align: center; }
+.zone.z2 { grid-column: 2 / 6; text-align: center; }
+
+/* capas */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 28px; }
+.steps li { position: relative; display: flex; }
+.step {
+  all: unset; box-sizing: border-box; cursor: pointer; width: 100%; display: flex; flex-direction: column;
+  border: 2px solid var(--navy); border-radius: 14px; overflow: hidden; background: var(--tint);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.step:hover { transform: translateY(-3px); }
+.step-head { background: var(--navy); color: var(--navy-ink); display: flex; align-items: center; gap: 12px; padding: 14px 14px; min-height: 76px; }
+.num { font-size: 30px; font-weight: 700; line-height: 1; min-width: 22px; }
+.step-head h2 { margin: 0; font-size: 17px; line-height: 1.2; font-weight: 600; text-wrap: balance; }
+.step-body { padding: 14px; color: var(--tint-ink); display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.step-body svg { width: 30px; height: 30px; color: var(--navy); }
+:root[data-theme="dark"] .step-body svg { color: var(--tint-ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .step-body svg { color: var(--tint-ink); } }
+.step-body p { margin: 0; font-size: 14px; }
+.more { margin-top: auto; font-family: var(--font-mono); font-size: 12px; color: var(--copper); }
+.zone-tag { display: none; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--copper); }
+
+.step[aria-pressed="true"] { border-color: var(--copper); box-shadow: 0 0 0 3px var(--copper), 0 10px 24px rgba(23,40,61,.18); transform: translateY(-3px); }
+.step.lit { border-color: var(--copper); box-shadow: 0 0 0 3px var(--copper); }
+
+/* flechas entre capas */
+.steps li:not(:last-child)::before {
+  content: ""; position: absolute; top: 50%; right: -24px; width: 20px; height: 3px; background: var(--navy); transform: translateY(-50%); transition: background .2s;
+}
+.steps li:not(:last-child)::after {
+  content: ""; position: absolute; top: 50%; right: -26px; width: 10px; height: 10px; border-top: 3px solid var(--navy); border-right: 3px solid var(--navy);
+  transform: translateY(-50%) rotate(45deg); transition: border-color .2s;
+}
+.steps li.arrow-lit::before { background: var(--copper); }
+.steps li.arrow-lit::after { border-color: var(--copper); }
+
+/* circuito de personal */
+.loop { display: grid; grid-template-columns: 1fr minmax(0, 2.6fr) 1fr; column-gap: 0; align-items: stretch; margin-top: -4px; }
+.lcell { position: relative; color: var(--copper); font-weight: 600; font-size: 14px; }
+.lcell span { position: absolute; max-width: 190px; }
+.lleft { margin-left: calc(10% - 14px); border-left: 3px solid var(--copper); border-bottom: 3px solid var(--copper); height: calc(50% + 40px); align-self: end; }
+.lleft::before { content: ""; position: absolute; left: -9px; top: -2px; border: 7.5px solid transparent; border-bottom: 12px solid var(--copper); border-top: 0; }
+.lleft span { left: 14px; top: 14px; }
+.lright { margin-right: calc(10% - 14px); border-right: 3px solid var(--copper); border-bottom: 3px solid var(--copper); height: calc(50% + 40px); align-self: end; }
+.lright::before { content: ""; position: absolute; left: -2px; bottom: -9px; border: 7.5px solid transparent; border-right: 12px solid var(--copper); border-left: 0; }
+.lright span { right: 14px; top: 14px; text-align: right; }
+.staff {
+  all: unset; box-sizing: border-box; cursor: pointer; display: flex; gap: 16px; align-items: center;
+  background: var(--surface); border: 3px solid var(--copper); border-radius: 14px; padding: 18px 22px; margin-top: 40px;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.staff:hover { transform: translateY(-2px); }
+.staff[aria-pressed="true"], .staff.lit { box-shadow: 0 0 0 4px var(--copper-soft), 0 10px 24px rgba(23,40,61,.14); }
+.staff svg { width: 44px; height: 44px; flex: none; color: var(--copper); }
+.staff h3 { margin: 0; font-size: 17px; line-height: 1.25; }
+.staff p { margin: 4px 0 0; font-style: italic; color: var(--muted); font-size: 14px; }
+.mobile-labels { display: none; }
+
+/* panel de detalle */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: clamp(16px, 3vw, 28px); display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(16px, 3vw, 36px); }
+.panel h3 { margin: 0 0 4px; font-size: 22px; line-height: 1.2; }
+.panel .kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--copper); margin: 0 0 6px; }
+.panel .lead { margin: 8px 0 16px; max-width: 60ch; }
+.panel h4 { margin: 0 0 8px; font-size: 12px; font-family: var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.chips { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-size: 14px; cursor: pointer; background: var(--tint); color: var(--tint-ink);
+  border: 2px solid transparent; border-radius: 6px; padding: 6px 12px; transition: border-color .15s, background .15s;
+}
+.chip:hover { border-color: var(--navy); }
+.chip[aria-pressed="true"] { background: var(--navy); color: var(--navy-ink); border-color: var(--navy); }
+.item-detail { margin: 0 0 16px; padding: 12px 14px; border-left: 4px solid var(--copper); background: var(--bg); border-radius: 0 8px 8px 0; font-size: 14px; min-height: 66px; }
+.item-detail b { display: block; margin-bottom: 2px; }
+.hint { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+.handoff { margin: 0; padding: 12px 14px; background: var(--copper-soft); border-radius: 8px; font-size: 14px; color: var(--ink); }
+.handoff b { color: var(--copper); }
+.art { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.art svg { width: 100%; height: auto; display: block; }
+.art figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; text-align: center; }
+.t-ink { fill: var(--ink); } .t-muted { fill: var(--muted); }
+.f-navy { fill: var(--navy); } .f-tint { fill: var(--tint); } .f-surface { fill: var(--surface); } .f-copper { fill: var(--copper); } .f-ok { fill: var(--ok); }
+.s-navy { stroke: var(--navy); } .s-copper { stroke: var(--copper); } .s-line { stroke: var(--line); }
+.svgtext { font-family: var(--font-body); font-size: 11px; }
+.svgtext.b { font-weight: 600; }
+.hot { cursor: pointer; outline: none; }
+.hot:hover { opacity: .82; }
+.hot:focus-visible { opacity: .82; }
+.hot.sel :is(rect, polygon, ellipse, circle) { stroke: var(--copper); stroke-width: 3.5; }
+.fade { animation: fadein .25s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+.pulse { animation: pulse 1.6s ease-in-out infinite; }
+
+.source { font-size: 13px; color: var(--muted); margin: 0; }
+
+@media (max-width: 960px) {
+  .steps { grid-template-columns: repeat(3, 1fr); row-gap: 28px; }
+  .zones { display: none; }
+  .zone-tag { display: block; }
+  .steps li:not(:last-child)::before, .steps li:not(:last-child)::after { display: none; }
+  .panel { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+  .steps li:not(:last-child)::before { display: block; top: auto; bottom: -26px; right: auto; left: 50%; width: 3px; height: 18px; transform: translateX(-50%); }
+  .steps li:not(:last-child)::after { display: block; top: auto; bottom: -28px; right: auto; left: 50%; transform: translateX(-50%) rotate(135deg); }
+  .loop { grid-template-columns: minmax(0, 1fr); }
+  .lleft, .lright { display: none; }
+  .staff { margin-top: 0; flex-direction: column; align-items: flex-start; }
+  .mobile-labels { display: flex; flex-direction: column; gap: 6px; color: var(--copper); font-weight: 600; font-size: 14px; margin: 0 0 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step, .staff, .fade, .pulse, .chip { transition: none; animation: none; }
+  .step:hover, .staff:hover { transform: none; }
+}
+body { margin: 0; }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Propuesta · Biblioteca Simón Bolívar, Universidad de Panamá</p>
+      <h1>Arquitectura del gemelo digital propuesto para la zona piloto</h1>
+      <p class="sub">Zona piloto: Colecciones Especiales. Toca una capa para ver qué hace y qué sensores se proponen. Dentro del detalle, cada elemento de la lista y del esquema también se puede tocar.</p>
+    </div>
+    <button class="play" id="play" type="button" aria-pressed="false">
+      <svg id="play-ico" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg>
+      <span id="play-txt">Recorrer el flujo</span>
+    </button>
+  </header>
+
+  <div class="zones" aria-hidden="true">
+    <div class="zone z1">Edificio</div>
+    <div class="zone z2">Gemelo digital</div>
+  </div>
+
+  <ol class="steps" id="steps"></ol>
+
+  <div class="loop" id="loop">
+    <div class="lcell lleft" id="lleft"><span>Revisan el aire acondicionado y la ventilación</span></div>
+    <button class="staff" id="staff" type="button" aria-pressed="false">
+      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="17" cy="15" r="6"/><path d="M5 40c0-7 5-12 12-12s12 5 12 12"/><circle cx="34" cy="18" r="5"/><path d="M33 29c7 0 11 4 11 10"/></svg>
+      <div>
+        <h3>Personal de conservación, mantenimiento y administración</h3>
+        <p>Revisan los avisos y deciden; el aire no se controla automáticamente.</p>
+      </div>
+    </button>
+    <div class="lcell lright" id="lright"><span>Informan</span></div>
+  </div>
+  <div class="mobile-labels" id="mlabels"><div>↑ Informan (desde Servicios)</div><div>↩ Revisan el aire acondicionado y la ventilación (en el Edificio)</div></div>
+
+  <section class="panel" id="panel" aria-live="polite"></section>
+
+  <p class="source">Elaboración propia, con base en la arquitectura de cinco capas de Lu et al. (2020).</p>
+</div>
+
+<script>
+(function () {
+  var ICONS = {
+    1: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5a3 3 0 0 1 6 0v12.2a6 6 0 1 1-6 0z"/><path d="M15 12v9"/><path d="M23 8h4M23 13h4"/></svg>',
+    2: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12a17 17 0 0 1 24 0"/><path d="M8 17a11 11 0 0 1 16 0"/><path d="M12 22a5 5 0 0 1 8 0"/><circle cx="16" cy="26" r="1.2" fill="currentColor"/></svg>',
+    3: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3l11 6v14l-11 6-11-6V9z"/><path d="M5 9l11 6 11-6M16 15v14"/></svg>',
+    4: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="16" cy="8" rx="10" ry="4"/><path d="M6 8v8c0 2.2 4.5 4 10 4s10-1.8 10-4V8"/><path d="M6 16v8c0 2.2 4.5 4 10 4s10-1.8 10-4v-8"/></svg>',
+    5: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="26" height="18" rx="2"/><path d="M9 19v-4M14 19v-8M19 19v-5M24 19v-9"/><path d="M11 28h10"/></svg>'
+  };
+
+  /* hot(): envuelve una parte del esquema para que se pueda tocar y se enlace con un elemento de la lista */
+  function hot(i, inner, label) {
+    return '<g class="hot" data-item="' + i + '" tabindex="0" role="button" aria-label="' + label + '">' + inner + '</g>';
+  }
+  function tile(x, y, l1, l2, d, i) {
+    return hot(i, '<g transform="translate(' + x + ' ' + y + ')"><rect width="128" height="62" rx="6" class="f-tint s-navy" stroke-width="1.5"/>' +
+      '<g transform="translate(28 32)"><path d="' + d + '" fill="none" class="s-navy" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>' +
+      '<text x="52" y="28" class="svgtext b t-ink">' + l1 + '</text><text x="52" y="43" class="svgtext t-ink">' + l2 + '</text></g>', l1 + ' ' + l2);
+  }
+  function box(x, y, t) { return '<rect x="' + x + '" y="' + y + '" width="68" height="40" rx="6" class="f-navy"/><text x="' + (x + 34) + '" y="' + (y + 24) + '" text-anchor="middle" class="svgtext b" fill="#fff">' + t + '</text>'; }
+  function arrow(x, y) { return '<path d="M' + x + ' ' + y + 'h10m-4 -5l5 5-5 5" class="s-navy" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'; }
+  function frame(inner) { return '<rect x="8" y="8" width="304" height="174" rx="8" class="f-surface s-line" stroke-width="1.5"/>' + inner; }
+
+  var ART = {
+    1: '<svg viewBox="0 0 320 190" role="group" aria-label="Cuatro tipos de sensor en la zona piloto">' + frame(
+       tile(24,24,'Temperatura','y humedad','M0 -10v14a5 5 0 1 0 0.01 0',0) +
+       tile(168,24,'Calidad del aire','CO₂','M-9 0a5 5 0 0 1 8-4a6 6 0 0 1 11 3a4 4 0 0 1 -2 8h-14a4 4 0 0 1 -3 -7',1) +
+       tile(24,104,'Contador','de personas','M-4 -9a3 3 0 1 0 0.01 0M-9 6c0-6 3-9 5-9s5 3 5 9',2) +
+       tile(168,104,'Medidor','eléctrico','M2 -10l-8 11h6l-2 9 9-12h-6z',3)) + '</svg>',
+
+    2: '<svg viewBox="0 0 320 190" role="group" aria-label="Sensores, gateway e internet">' + frame(
+       hot(0, '<rect x="22" y="36" width="130" height="116" rx="8" class="f-tint" fill-opacity=".001" stroke="none"/>' +
+         '<g class="f-navy"><circle cx="40" cy="55" r="9"/><circle cx="40" cy="95" r="9"/><circle cx="40" cy="135" r="9"/></g>' +
+         '<g fill="none" class="s-copper" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"><path d="M52 55C90 55 90 95 118 95"/><path d="M52 95H118"/><path d="M52 135C90 135 90 95 118 95"/></g>' +
+         '<text x="40" y="167" text-anchor="middle" class="svgtext t-muted">Sensores</text><text x="88" y="42" text-anchor="middle" class="svgtext t-muted">red inalámbrica</text>', 'Red inalámbrica') +
+       hot(1, '<rect x="118" y="72" width="78" height="46" rx="6" class="f-navy"/><text x="157" y="92" text-anchor="middle" class="svgtext b" fill="#fff">Gateway</text><text x="157" y="107" text-anchor="middle" class="svgtext" fill="#DCE6F2">concentrador</text>', 'Concentrador gateway') +
+       '<path d="M196 95H226" class="s-navy" stroke-width="3" fill="none"/><path d="M222 89l8 6-8 6" class="s-navy" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' +
+       hot(2, '<rect x="234" y="72" width="66" height="46" rx="23" class="f-tint s-navy" stroke-width="2"/><text x="267" y="99" text-anchor="middle" class="svgtext b t-ink">Internet</text>', 'Salida a internet')) + '</svg>',
+
+    3: '<svg viewBox="0 0 320 190" role="group" aria-label="Modelo 3D simplificado con sensores ubicados">' + frame(
+       hot(0, '<polygon points="160,38 262,78 262,134 160,174 58,134 58,78" class="f-tint s-navy" stroke-width="2" stroke-linejoin="round"/>' +
+         '<polyline points="58,78 160,118 262,78" fill="none" class="s-navy" stroke-width="2" stroke-linejoin="round"/><line x1="160" y1="118" x2="160" y2="174" class="s-navy" stroke-width="2"/>', 'Modelo 3D simplificado') +
+       hot(1, '<g class="f-copper"><circle cx="110" cy="96" r="8"/><circle cx="205" cy="104" r="8"/><circle cx="160" cy="140" r="8"/></g>', 'Ubicación de los sensores') +
+       hot(2, '<rect x="196" y="40" width="96" height="30" rx="5" class="f-surface s-copper" stroke-width="2"/><text x="244" y="59" text-anchor="middle" class="svgtext b t-ink">Sensor + lectura</text>', 'Lecturas en el espacio') +
+       '<path d="M222 70L208 98" class="s-copper" stroke-width="1.5" fill="none"/>') + '</svg>',
+
+    4: '<svg viewBox="0 0 320 190" role="group" aria-label="Recibe, valida, almacena, umbrales e historial">' + frame(
+       hot(0, box(20,32,'Recibe') + box(106,32,'Valida'), 'Recibe y valida') + arrow(94,52) +
+       arrow(180,52) + hot(1, box(192,32,'Almacena'), 'Almacena las lecturas') +
+       '<path d="M154 74v18" class="s-navy" stroke-width="2.5" fill="none"/>' +
+       hot(2, '<rect x="88" y="94" width="132" height="34" rx="6" class="f-copper"/><text x="154" y="115" text-anchor="middle" class="svgtext b" fill="#fff">Aplica los umbrales</text>', 'Aplica umbrales') +
+       hot(3, '<ellipse cx="154" cy="146" rx="46" ry="8" class="f-tint s-navy" stroke-width="2"/><rect x="108" y="146" width="92" height="20" class="f-tint" stroke="none"/><ellipse cx="154" cy="166" rx="46" ry="8" class="f-tint s-navy" stroke-width="2"/><text x="154" y="164" text-anchor="middle" class="svgtext b t-ink">Historial de eventos</text>', 'Historial de eventos')) + '</svg>',
+
+    5: '<svg viewBox="0 0 320 190" role="group" aria-label="Ilustración de un tablero con lecturas, avisos y reportes">' + frame(
+       '<rect x="24" y="24" width="272" height="142" rx="6" class="f-tint s-line" stroke-width="1"/>' +
+       hot(0, '<rect x="36" y="36" width="76" height="40" rx="4" class="f-surface"/><text x="74" y="52" text-anchor="middle" class="svgtext t-muted">Temperatura</text><rect x="52" y="60" width="44" height="6" rx="3" class="f-navy"/>', 'Tablero: temperatura') +
+       hot(0, '<rect x="122" y="36" width="76" height="40" rx="4" class="f-surface"/><text x="160" y="52" text-anchor="middle" class="svgtext t-muted">Humedad</text><rect x="138" y="60" width="44" height="6" rx="3" class="f-navy"/>', 'Tablero: humedad') +
+       hot(0, '<rect x="208" y="36" width="76" height="40" rx="4" class="f-surface"/><text x="246" y="52" text-anchor="middle" class="svgtext t-muted">CO₂</text><rect x="224" y="60" width="44" height="6" rx="3" class="f-copper"/>', 'Tablero: CO2') +
+       hot(2, '<rect x="36" y="88" width="74" height="64" rx="4" class="f-surface"/><text x="73" y="104" text-anchor="middle" class="svgtext t-muted">Ocupación</text><g class="f-navy"><rect x="46" y="128" width="9" height="16"/><rect x="60" y="118" width="9" height="26"/><rect x="74" y="124" width="9" height="20"/><rect x="88" y="112" width="9" height="32"/></g>', 'Reportes de ocupación') +
+       hot(3, '<rect x="116" y="88" width="74" height="64" rx="4" class="f-surface"/><text x="153" y="104" text-anchor="middle" class="svgtext t-muted">Consumo</text><g class="f-navy"><rect x="126" y="122" width="9" height="22"/><rect x="140" y="112" width="9" height="32"/><rect x="154" y="126" width="9" height="18"/><rect x="168" y="116" width="9" height="28"/></g>', 'Reportes de consumo') +
+       hot(1, '<g class="pulse"><rect x="198" y="88" width="86" height="64" rx="4" class="f-copper"/></g><text x="241" y="112" text-anchor="middle" class="svgtext b" fill="#fff">Aviso</text><text x="241" y="128" text-anchor="middle" class="svgtext" fill="#fff">lectura fuera</text><text x="241" y="141" text-anchor="middle" class="svgtext" fill="#fff">de rango</text>', 'Aviso de lectura fuera de rango')) + '</svg>',
+
+    6: '<svg viewBox="0 0 320 190" role="group" aria-label="El personal recibe el aviso, decide y actúa sobre el aire acondicionado">' + frame(
+       hot(0, '<rect x="22" y="38" width="76" height="50" rx="6" class="f-copper"/><text x="60" y="60" text-anchor="middle" class="svgtext b" fill="#fff">Aviso</text><text x="60" y="76" text-anchor="middle" class="svgtext" fill="#fff">en el tablero</text>', 'Revisan los avisos') +
+       arrow(100,63) +
+       hot(1, '<rect x="112" y="38" width="92" height="50" rx="6" class="f-tint s-navy" stroke-width="2"/><text x="158" y="60" text-anchor="middle" class="svgtext b t-ink">Personal revisa</text><text x="158" y="76" text-anchor="middle" class="svgtext t-ink">y decide</text>', 'Deciden') +
+       arrow(206,63) +
+       hot(2, '<rect x="218" y="38" width="86" height="50" rx="6" class="f-navy"/><text x="261" y="60" text-anchor="middle" class="svgtext b" fill="#fff">Aire y</text><text x="261" y="76" text-anchor="middle" class="svgtext b" fill="#fff">ventilación</text>', 'Revisan el aire y la ventilación') +
+       '<rect x="40" y="112" width="240" height="46" rx="6" class="f-surface s-copper" stroke-width="2" stroke-dasharray="6 5"/>' +
+       '<text x="160" y="132" text-anchor="middle" class="svgtext b t-ink">No hay control automático</text><text x="160" y="148" text-anchor="middle" class="svgtext t-muted">La acción la toma una persona</text>') + '</svg>'
+  };
+
+  var LAYERS = [
+    { id: 1, zone: 'Edificio', name: 'Adquisición de datos', short: 'Sensores propuestos para Colecciones Especiales.',
+      lead: 'Los sensores propuestos para la zona piloto de la Biblioteca Simón Bolívar medirían el ambiente, la ocupación y el consumo de energía. Es el único punto donde el sistema toca el espacio físico.',
+      items: [
+        ['Temperatura y humedad', 'Miden las condiciones del ambiente en la zona piloto. Sus lecturas se comparan después con los umbrales definidos.'],
+        ['Calidad del aire (CO₂)', 'Mide el CO₂ como indicador de la calidad del aire. Si la lectura sale del rango, el sistema genera un aviso.'],
+        ['Contador de personas', 'Registra cuánta gente hay en la zona. Sus datos alimentan los reportes de ocupación.'],
+        ['Medidor eléctrico', 'Registra el consumo de energía. Sus datos alimentan los reportes de consumo.']],
+      next: 'Las lecturas salen de cada sensor hacia la capa de transmisión.' },
+    { id: 2, zone: 'Gemelo digital', name: 'Transmisión', short: 'Las lecturas viajan por red inalámbrica hasta un gateway.',
+      lead: 'Los sensores envían sus lecturas por red inalámbrica a un concentrador (gateway) que tiene salida a internet.',
+      items: [
+        ['Red inalámbrica', 'Los sensores envían sus lecturas sin cables, por red inalámbrica.'],
+        ['Concentrador (gateway)', 'Reúne en un solo punto las lecturas de todos los sensores.'],
+        ['Salida a internet', 'Desde el gateway, las lecturas salen por internet hacia el resto del gemelo digital.']],
+      next: 'El gateway reenvía las lecturas por internet hacia la capa de integración.' },
+    { id: 3, zone: 'Gemelo digital', name: 'Modelado digital', short: 'Modelo 3D simplificado de la zona piloto.',
+      lead: 'Un modelo 3D simplificado de la zona piloto muestra dónde se ubican los sensores y permite ver las lecturas en el propio espacio.',
+      items: [
+        ['Modelo 3D simplificado', 'Representa la zona piloto de forma simplificada, sin el detalle completo del edificio.'],
+        ['Ubicación de los sensores', 'Cada sensor aparece en el modelo en el lugar donde está instalado.'],
+        ['Lecturas en el espacio', 'Las lecturas se ven sobre el propio modelo, junto al sensor que las produce.']],
+      next: 'El modelo se vincula con los datos en la capa de integración.' },
+    { id: 4, zone: 'Gemelo digital', name: 'Integración de datos y modelo', short: 'Recibe, valida y guarda; aplica umbrales.',
+      lead: 'Recibe las lecturas, las valida y las almacena. Aplica los umbrales definidos y guarda el historial de eventos.',
+      items: [
+        ['Recibe y valida', 'Recibe las lecturas y comprueba que sean válidas antes de usarlas.'],
+        ['Almacena las lecturas', 'Guarda cada lectura para poder consultarla después.'],
+        ['Aplica umbrales', 'Compara cada lectura con el rango definido. Cuando una lectura sale del rango, queda registrada como evento.'],
+        ['Historial de eventos', 'Guarda los eventos para consultarlos y revisarlos más adelante.']],
+      next: 'Los datos validados y los eventos quedan disponibles para los servicios.' },
+    { id: 5, zone: 'Gemelo digital', name: 'Servicios', short: 'Tablero, avisos y reportes.',
+      lead: 'Es lo que ve el personal: un tablero con las lecturas, avisos cuando una lectura sale del rango y reportes de ocupación y consumo.',
+      items: [
+        ['Tablero con las lecturas', 'Muestra las lecturas de los sensores, como temperatura, humedad y CO₂.'],
+        ['Avisos de lectura fuera de rango', 'Avisan cuando una lectura sale del rango definido, para que alguien la revise.'],
+        ['Reportes de ocupación', 'Resumen de cuánta gente usó la zona piloto.'],
+        ['Reportes de consumo', 'Resumen del consumo de energía en la zona piloto.']],
+      next: 'El personal de conservación, mantenimiento y administración recibe la información.' }
+  ];
+  var STAFF = { id: 6, name: 'Personal de conservación, mantenimiento y administración',
+    lead: 'Revisan los avisos y deciden. El aire acondicionado no se controla automáticamente: la acción la toma una persona.',
+    items: [
+      ['Revisan los avisos', 'Leen los avisos que llegan desde la capa de servicios.'],
+      ['Deciden', 'Una persona decide si hay que actuar. El sistema no actúa por su cuenta.'],
+      ['Revisan el aire acondicionado y la ventilación', 'Si hace falta, revisan el equipo en el edificio. Ahí los sensores siguen midiendo y el ciclo continúa.']],
+    next: 'Su intervención vuelve al edificio, donde los sensores siguen midiendo y cierran el ciclo.' };
+
+  var stepsEl = document.getElementById('steps');
+  var panel = document.getElementById('panel');
+  var staffEl = document.getElementById('staff');
+  var lleft = document.getElementById('lleft');
+  var lright = document.getElementById('lright');
+  var playBtn = document.getElementById('play');
+  var current = 1;
+
+  LAYERS.forEach(function (L) {
+    var li = document.createElement('li');
+    li.innerHTML = '<button class="step" type="button" data-id="' + L.id + '" aria-pressed="false">' +
+      '<div class="step-head"><span class="num">' + L.id + '</span><h2>' + L.name + '</h2></div>' +
+      '<div class="step-body"><span class="zone-tag">' + L.zone + '</span>' + ICONS[L.id] + '<p>' + L.short + '</p><span class="more">Ver detalle →</span></div></button>';
+    stepsEl.appendChild(li);
+  });
+
+  function chipList(items) {
+    return items.map(function (it, i) {
+      return '<li><button type="button" class="chip" data-item="' + i + '" aria-pressed="false">' + it[0] + '</button></li>';
+    }).join('');
+  }
+
+  function selectItem(i) {
+    var d = current === 6 ? STAFF : LAYERS[current - 1];
+    var it = d.items[i]; if (!it) return;
+    var chips = panel.querySelectorAll('.chip');
+    for (var k = 0; k < chips.length; k++) chips[k].setAttribute('aria-pressed', String(Number(chips[k].dataset.item) === i));
+    var hots = panel.querySelectorAll('.hot');
+    for (var h = 0; h < hots.length; h++) hots[h].classList.toggle('sel', Number(hots[h].dataset.item) === i);
+    panel.querySelector('.item-detail').innerHTML = '<b>' + it[0] + '</b>' + it[1];
+  }
+
+  function render(id) {
+    current = id;
+    var d = id === 6 ? STAFF : LAYERS[id - 1];
+    var kicker = id === 6 ? 'Personas · decisión' : 'Capa ' + id + ' de 5 · ' + d.zone;
+    var cap = id === 5 ? 'Ilustración esquemática, sin datos reales. Toca cada parte.' : 'Esquema de la capa. Toca cada parte.';
+    panel.className = 'panel fade';
+    panel.innerHTML =
+      '<div><p class="kicker">' + kicker + '</p><h3>' + d.name + '</h3><p class="lead">' + d.lead + '</p>' +
+      '<h4>' + (id === 6 ? 'Qué hacen' : 'Qué incluye') + '</h4><p class="hint">Toca un elemento para ver qué es.</p>' +
+      '<ul class="chips">' + chipList(d.items) + '</ul><p class="item-detail"></p>' +
+      '<p class="handoff"><b>Entrega:</b> ' + d.next + '</p></div>' +
+      '<figure class="art" style="margin:0">' + ART[id] + '<figcaption>' + cap + '</figcaption></figure>';
+    var btns = stepsEl.querySelectorAll('.step');
+    for (var i = 0; i < btns.length; i++) btns[i].setAttribute('aria-pressed', String(Number(btns[i].dataset.id) === id));
+    staffEl.setAttribute('aria-pressed', String(id === 6));
+    selectItem(0);
+  }
+
+  panel.addEventListener('click', function (e) {
+    var t = e.target.closest('.chip, .hot'); if (!t) return;
+    selectItem(Number(t.dataset.item));
+  });
+  panel.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var t = e.target.closest('.hot'); if (!t) return;
+    e.preventDefault(); selectItem(Number(t.dataset.item));
+  });
+
+  stepsEl.addEventListener('click', function (e) {
+    var b = e.target.closest('.step'); if (!b) return;
+    stop(); clearLit(); render(Number(b.dataset.id));
+  });
+  staffEl.addEventListener('click', function () { stop(); clearLit(); render(6); });
+
+  /* recorrido */
+  var timer = null, pos = 0;
+  var SEQ = ['s1', 'a1', 's2', 'a2', 's3', 'a3', 's4', 'a4', 's5', 'down', 's6', 'back'];
+  function clearLit() {
+    var all = document.querySelectorAll('.lit, .arrow-lit');
+    for (var i = 0; i < all.length; i++) { all[i].classList.remove('lit'); all[i].classList.remove('arrow-lit'); }
+  }
+  function showFrame(k) {
+    clearLit();
+    var lis = stepsEl.children;
+    if (k[0] === 's') {
+      var n = Number(k[1]);
+      if (n <= 5) { lis[n - 1].querySelector('.step').classList.add('lit'); render(n); }
+      else { staffEl.classList.add('lit'); render(6); }
+    } else if (k[0] === 'a') {
+      var m = Number(k[1]);
+      lis[m - 1].classList.add('arrow-lit');
+      lis[m - 1].querySelector('.step').classList.add('lit');
+    } else if (k === 'down') { lright.classList.add('lit'); lis[4].querySelector('.step').classList.add('lit'); }
+    else if (k === 'back') { lleft.classList.add('lit'); lis[0].querySelector('.step').classList.add('lit'); staffEl.classList.add('lit'); }
+  }
+  function start() {
+    playBtn.setAttribute('aria-pressed', 'true');
+    document.getElementById('play-txt').textContent = 'Detener recorrido';
+    document.getElementById('play-ico').innerHTML = '<rect x="2" y="2" width="10" height="10" fill="currentColor"/>';
+    pos = 0; showFrame(SEQ[0]);
+    timer = setInterval(function () { pos = (pos + 1) % SEQ.length; showFrame(SEQ[pos]); }, 1300);
+  }
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; }
+    playBtn.setAttribute('aria-pressed', 'false');
+    document.getElementById('play-txt').textContent = 'Recorrer el flujo';
+    document.getElementById('play-ico').innerHTML = '<path d="M3 1.5v11l9-5.5z" fill="currentColor"/>';
+  }
+  playBtn.addEventListener('click', function () { if (timer) { stop(); clearLit(); } else start(); });
+
+  render(1);
+})();
+</script>
+</body>
+</html>
